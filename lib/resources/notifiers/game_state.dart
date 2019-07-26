@@ -5,31 +5,43 @@ import 'dart:math';
 
 import 'package:jutpatti/models/player.dart';
 
+enum PlayType{
+  PICK_FROM_DECK,
+  PICK_FROM_DECK_OR_THROW,
+  THROW_FROM_HAND,
+}
+
 class GameState extends ChangeNotifier {
-  Player player1 = Player(name: "Player 1", cards: []);
-  Player player2 = Player(name: "Player 2", cards: []);
+  List<Player> players=[];
+  int numberOfPlayers;
   List<PlayingCard> deck=[];
   List<PlayingCard> throwDeck=[];
   List<PlayingCard> allCards;
   PlayingCard joker;
-  int turn = 0;
+  int turnCount = 0;
+  int turn;
   int numberOfCardsInHand = 5;
   List<PlayingCard> jokers;
+  Player winner;
+  PlayType playType;
 
-  beginGame() {
-    allCards = List<PlayingCard>.from( getAllCards());
-    player1.cards = [];
-    player2.cards = [];
-    deck = [];
-    Random random = Random();
-    for (int i = 0; i < numberOfCardsInHand * 2; i++) {
-      int randomNumber = random.nextInt(allCards.length);
-      if(i%2 == 0) {
-        player1.cards.add(allCards.removeAt(randomNumber));
-      }else{
-        player2.cards.add(allCards.removeAt(randomNumber));
-      }
+  beginGame({int playerCount = 2,int numberOfCards = 5}) {
+    numberOfCardsInHand = numberOfCards;
+    numberOfPlayers = playerCount;
+    players = [];
+    for(int i = 0; i < playerCount; i++) {
+      players.add(Player(
+        cards: [],
+        name: "Player ${i+1}"
+      ));
     }
+    allCards = List<PlayingCard>.from( getAllCards());
+    deck = [];
+    allCards.shuffle();
+    for (int i = 0; i < numberOfCardsInHand; i++) {
+      players.forEach((player)=>player.cards.add(allCards.removeAt(0)));
+    }
+    Random random = Random();
     joker = allCards.removeAt(random.nextInt(allCards.length));
     jokers = [
       PlayingCard(cardSuit: CardSuit.clubs,cardType: joker.nextCard()),
@@ -39,17 +51,38 @@ class GameState extends ChangeNotifier {
     ];
     deck = allCards;
     deck.shuffle();
-    isWinner(player2);
+    turn = 1;
+    turnCount = 0;
+    playType = PlayType.PICK_FROM_DECK;
+    isWinner();
     notifyListeners();
   }
 
-  bool isWinner(Player player) {
+  isWinner() {
     int pairsNeeded = (numberOfCardsInHand + 1)~/2;
-    return player.isWinner(jokers,pairsNeeded);
+    if( players[turn].isWinner(jokers,pairsNeeded)){
+      winner = players[turn];
+    }
   }
 
   nextTurn() {
-    turn = turn == 0 ? 1 : 0;
+    turn = (turn+1)%numberOfPlayers;
+  }
+
+  accept(Map data) {
+    if(data["from"] == "deck") {
+      players[turn].cards.add(deck.removeAt(0));
+      isWinner();
+      playType = PlayType.THROW_FROM_HAND;
+      notifyListeners();
+    }
+  }
+
+  throwCard(PlayingCard card) {
+    players[turn].cards.remove(card);
+    throwDeck.insert(0,card);
+    playType = PlayType.PICK_FROM_DECK_OR_THROW;
+    nextTurn();
     notifyListeners();
   }
 
