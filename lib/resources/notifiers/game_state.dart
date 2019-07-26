@@ -131,6 +131,7 @@ class GameState extends ChangeNotifier {
           _autoPickFromDeck();
         }
       }
+      playType = PlayType.PICK_FROM_DECK_OR_THROW;
       nextTurn();
       notifyListeners();
     }
