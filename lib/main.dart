@@ -51,6 +51,7 @@ class HomePage extends StatelessWidget {
                   if (gameState.joker != null)
                     TransformedCard(
                       playingCard: gameState.joker,
+                      maxDrags: 0,
                     ),
                   Text("thrown"),
                   _buildThrowDeck(gameState),
@@ -92,18 +93,18 @@ class HomePage extends StatelessWidget {
           },
           builder: (_, pcard, ___) => Row(
             children: player.cards
-                .map((card) => Draggable(
-                    data: {
+                .map((card) {
+                  final int index = player.cards.indexOf(card);
+                  return TransformedCard(
+                    playingCard: card,
+                    maxDrags: player.type == PlayerType.HUMAN && gameState.playType == PlayType.THROW_FROM_HAND ? 1 : 0,
+                    dragData: {
                       "card":card,
                       "from":"hand"
                     },
-                    childWhenDragging: Container(),
-                    feedback: TransformedCard(
-                      playingCard: card,
-                    ),
-                    child: TransformedCard(
-                      playingCard: card,
-                    )))
+                    transformIndex: index,
+                  );
+                })
                 .toList(),
           ),
         ),
@@ -112,51 +113,33 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Draggable<Map<String, Object>> _buildDeck(GameState gameState) {
-    return Draggable(
-      data: {
-        "from": "deck",
-        "card": gameState.deck[0],
-      },
-      child: TransformedCard(
+  Widget _buildDeck(GameState gameState) {
+    return  TransformedCard(
         playingCard: gameState.deck[0],
-      ),
-      feedback: Container(
-        child: TransformedCard(
-          playingCard: gameState.deck[0],
-        ),
-      ),
-      childWhenDragging: TransformedCard(
-        playingCard: gameState.deck[1],
-      ),
-    );
+        dragData: {
+          "from": "deck",
+          "card": gameState.deck[0],
+        },
+        maxDrags: gameState.playType == PlayType.PICK_FROM_DECK || gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW ? 1 : 0,
+      );
   }
 
   Widget _buildThrowDeck(GameState gameState) {
     return DragTarget<Map<String,dynamic>>(
       builder: (context, _, __) {
         return gameState.throwDeck.length > 0
-            ? Draggable(
-                child: TransformedCard(
-                  playingCard: gameState.throwDeck[0],
-                ),
-                feedback: TransformedCard(
-                  playingCard: gameState.throwDeck[0],
-                ),
-                childWhenDragging: Container(
-                  color: Colors.green,
-                  height: 60,
-                  width: 40,
-                ),
-                data: {
+            ? TransformedCard(
+                playingCard: gameState.throwDeck[0],
+                dragData: {
                   "from":"throw",
                   "card": gameState.throwDeck[0]
                 },
+                maxDrags: gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW ? 1 : 0,
               )
             : Container(
                 color: Colors.green,
-                height: 60,
-                width: 40,
+                height: 80,
+                width: 60,
               );
       },
       onWillAccept: (data) {

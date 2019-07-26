@@ -3,53 +3,59 @@ import '../models/card.dart';
 
 // TransformedCard makes the card draggable and translates it according to
 // position in the stack.
-class TransformedCard extends StatefulWidget {
+class TransformedCard extends StatelessWidget {
   final PlayingCard playingCard;
   final double transformDistance;
   final int transformIndex;
   final int columnIndex;
-  final List<PlayingCard> attachedCards;
+  final Map<String, dynamic> dragData;
+  final int maxDrags;
 
-  TransformedCard({
-    @required this.playingCard,
-    this.transformDistance = 15.0,
-    this.transformIndex = 0,
-    this.columnIndex,
-    this.attachedCards,
-  });
+  TransformedCard(
+      {@required this.playingCard,
+      this.transformDistance = 25.0,
+      this.transformIndex = 0,
+      this.columnIndex,
+      this.maxDrags = 1,
+      this.dragData});
 
-  @override
-  _TransformedCardState createState() => _TransformedCardState();
-}
-
-class _TransformedCardState extends State<TransformedCard> {
   @override
   Widget build(BuildContext context) {
     return Transform(
       transform: Matrix4.identity()
         ..translate(
+          -transformIndex * transformDistance,
           0.0,
-          widget.transformIndex * widget.transformDistance,
           0.0,
-        ),
+        )
+        ..rotateZ(.1),
       child: _buildCard(),
     );
   }
 
   Widget _buildCard() {
-    return !widget.playingCard.faceUp
-        ? Container(
-            height: 60.0,
-            width: 40.0,
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              border: Border.all(color: Colors.black),
-              borderRadius: BorderRadius.circular(8.0),
+    return Draggable(
+      maxSimultaneousDrags: maxDrags,
+      data: dragData,
+      child: !playingCard.faceUp
+          ? Container(
+              height: 80.0,
+              width: 60.0,
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            )
+          : Container(
+              child: _buildFaceUpCard(),
             ),
-          )
-        : Container(
-            child: _buildFaceUpCard(),
-          );
+      feedback: _buildFaceUpCard(),
+      childWhenDragging: Opacity(
+        opacity: 0.5,
+        child: _buildFaceUpCard(),
+      ),
+    );
   }
 
   Widget _buildFaceUpCard() {
@@ -59,44 +65,32 @@ class _TransformedCardState extends State<TransformedCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
           color: Colors.white,
-          border: Border.all(color: Colors.black),
+          border: Border.all(color: Colors.grey.shade300),
         ),
-        height: 60.0,
-        width: 40,
+        height: 80.0,
+        width: 60,
         child: Stack(
           children: <Widget>[
             Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Center(
-                    child: Text(
-                      _cardTypeToString(),
-                      style: TextStyle(
-                        fontSize: 16.0,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 20.0,
-                    child: _suitToImage(),
-                  )
-                ],
+              child: Container(
+                height: 30.0,
+                child: _suitToImage(),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(4.0),
               child: Align(
-                alignment: Alignment.topRight,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                alignment: Alignment.topLeft,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Text(
                       _cardTypeToString(),
                       style: TextStyle(
-                        fontSize: 10.0,
-                      ),
+                          fontSize: 12.0,
+                          fontWeight: FontWeight.bold,
+                          color: _suitToColor()),
                     ),
                     Container(
                       height: 10.0,
@@ -113,7 +107,7 @@ class _TransformedCardState extends State<TransformedCard> {
   }
 
   String _cardTypeToString() {
-    switch (widget.playingCard.cardType) {
+    switch (playingCard.cardType) {
       case CardType.one:
         return "1";
       case CardType.two:
@@ -145,8 +139,21 @@ class _TransformedCardState extends State<TransformedCard> {
     }
   }
 
+  Color _suitToColor() {
+    switch (playingCard.cardSuit) {
+      case CardSuit.hearts:
+      case CardSuit.diamonds:
+        return Colors.red;
+      case CardSuit.clubs:
+      case CardSuit.spades:
+        return Colors.black;
+      default:
+        return null;
+    }
+  }
+
   Image _suitToImage() {
-    switch (widget.playingCard.cardSuit) {
+    switch (playingCard.cardSuit) {
       case CardSuit.hearts:
         return Image.asset('assets/images/hearts.png');
       case CardSuit.diamonds:
