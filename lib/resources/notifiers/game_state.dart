@@ -75,7 +75,9 @@ class GameState extends ChangeNotifier {
   }
 
   nextTurn() {
-    turn = (turn+1)%numberOfPlayers;
+    if(turn!=null)
+      turn = (turn+1)%numberOfPlayers;
+    playByComputer();
   }
 
   _makeDeckFromThrowDeck() {
@@ -109,7 +111,6 @@ class GameState extends ChangeNotifier {
     playType = PlayType.PICK_FROM_DECK_OR_THROW;
     turnCount++;
     nextTurn();
-    playByComputer();
     notifyListeners();
   }
 
@@ -160,6 +161,10 @@ class GameState extends ChangeNotifier {
     final List<PlayingCard> throwable =  players[turn].getThrowAbleCard(jokers);
     players[turn].cards.remove(throwable[0]);
     throwDeck.insert(0, throwable[0]);
+  }
+
+  sortCards(List<PlayingCard> cards) {
+    cards.sort((card1,card2) => card1.cardType.index.compareTo(card2.cardType.index));
   }
 
 }
