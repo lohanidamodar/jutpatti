@@ -73,31 +73,39 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  DragTarget<Map<String, dynamic>> _buildPlayerHand(
+  Widget _buildPlayerHand(
       GameState gameState, Player player) {
     int index = gameState.players.indexOf(player);
-    return DragTarget<Map<String, dynamic>>(
-      onAccept: (data) {
-        print(data);
-        gameState.accept(data);
-      },
-      onWillAccept: (_) {
-        return gameState.turn == index &&
-            player.cards.length == gameState.numberOfCardsInHand;
-      },
-      builder: (_, pcard, ___) => Row(
-        children: player.cards
-            .map((card) => Draggable(
-                data: card,
-                childWhenDragging: Container(),
-                feedback: TransformedCard(
-                  playingCard: card,
-                ),
-                child: TransformedCard(
-                  playingCard: card,
-                )))
-            .toList(),
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(player.name),
+        DragTarget<Map<String, dynamic>>(
+          onAccept: (data) {
+            print(data);
+            gameState.accept(data);
+          },
+          onWillAccept: (_) {
+            return gameState.turn == index &&
+                player.cards.length == gameState.numberOfCardsInHand;
+          },
+          builder: (_, pcard, ___) => Row(
+            children: player.cards
+                .map((card) => Draggable(
+                    data: card,
+                    childWhenDragging: Container(),
+                    feedback: TransformedCard(
+                      playingCard: card,
+                    ),
+                    child: TransformedCard(
+                      playingCard: card,
+                    )))
+                .toList(),
+          ),
+        ),
+        const SizedBox(height: 10.0),
+      ],
     );
   }
 

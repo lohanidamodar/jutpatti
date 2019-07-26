@@ -37,6 +37,7 @@ class GameState extends ChangeNotifier {
     }
     allCards = List<PlayingCard>.from( getAllCards());
     deck = [];
+    throwDeck = [];
     allCards.shuffle();
     for (int i = 0; i < numberOfCardsInHand; i++) {
       players.forEach((player)=>player.cards.add(allCards.removeAt(0)));
