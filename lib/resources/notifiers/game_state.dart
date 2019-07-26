@@ -32,12 +32,14 @@ class GameState extends ChangeNotifier {
     for(int i = 0; i < playerCount; i++) {
       players.add(Player(
         cards: [],
+        type: i==0 ? PlayerType.HUMAN : PlayerType.COMPUTER,
         name: "Player ${i+1}"
       ));
     }
     allCards = List<PlayingCard>.from( getAllCards());
     deck = [];
     throwDeck = [];
+    winner = null;
     allCards.shuffle();
     for (int i = 0; i < numberOfCardsInHand; i++) {
       players.forEach((player)=>player.cards.add(allCards.removeAt(0)));
@@ -55,17 +57,21 @@ class GameState extends ChangeNotifier {
     turn = 1;
     turnCount = 0;
     playType = PlayType.PICK_FROM_DECK;
+    playByComputer();
     isWinner();
     notifyListeners();
   }
 
-  isWinner() {
+  bool isWinner() {
     int pairsNeeded = (numberOfCardsInHand + 1)~/2;
     if( players[turn].isWinner(jokers,pairsNeeded)){
       winner = players[turn];
       playType = null;
       turn = null;
+      notifyListeners();
+      return true;
     }
+    return false;
   }
 
   nextTurn() {
@@ -103,7 +109,56 @@ class GameState extends ChangeNotifier {
     playType = PlayType.PICK_FROM_DECK_OR_THROW;
     turnCount++;
     nextTurn();
+    playByComputer();
     notifyListeners();
+  }
+
+  playByComputer() {
+    Player player = players[turn];
+    if(player.type == PlayerType.COMPUTER) {
+      if(playType == PlayType.PICK_FROM_DECK) {
+        _autoPickFromDeck();
+      }else if(playType == PlayType.PICK_FROM_DECK_OR_THROW) {
+        PlayingCard card = throwDeck[0];
+        if(sameCardInHand(card) == 1) {
+          player.cards.add(card);
+          if(isWinner())
+            return;
+          autoThrowCard();
+        }else{
+          _autoPickFromDeck();
+        }
+      }
+      nextTurn();
+      notifyListeners();
+    }
+  }
+
+  _autoPickFromDeck() {
+    PlayingCard card = deck.removeAt(0);
+    if(sameCardInHand(card) == 1 || jokers.contains(card)) {
+      players[turn].cards.add(card);
+      if(isWinner())
+        return;
+      autoThrowCard();
+    }else{
+      throwDeck.insert(0, card);
+    }
+  }
+
+  sameCardInHand(PlayingCard card) {
+    int sameCardInHand = 0;
+    players[turn].cards.forEach((handCard){
+      if(card.cardType == handCard.cardType)
+        sameCardInHand++;
+    });
+    return sameCardInHand;
+  }
+
+  autoThrowCard() {
+    final List<PlayingCard> throwable =  players[turn].getThrowAbleCard(jokers);
+    players[turn].cards.remove(throwable[0]);
+    throwDeck.insert(0, throwable[0]);
   }
 
 }
