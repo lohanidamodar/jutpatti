@@ -124,7 +124,8 @@ class GameState extends ChangeNotifier {
           player.cards.add(card);
           if(isWinner())
             return;
-          autoThrowCard();
+          else
+            autoThrowCard();
         }else{
           _autoPickFromDeck();
         }
