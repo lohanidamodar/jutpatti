@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:jutpatti/models/card.dart';
+import 'package:jutpatti/models/player.dart';
 import 'package:jutpatti/resources/notifiers/game_state.dart';
 import 'package:jutpatti/widgets/playing_card.dart';
 import 'package:provider/provider.dart';
@@ -39,78 +40,20 @@ class HomePage extends StatelessWidget {
           builder: (context, gameState, _) {
             return Column(children: [
               ...gameState.players.map((player) {
-                int index = gameState.players.indexOf(player);
-                return DragTarget<Map<String, dynamic>>(
-                  onAccept: (data) {
-                    print(data);
-                    gameState.accept(data);
-                  },
-                  onWillAccept: (_) {
-                    return gameState.turn == index &&
-                        player.cards.length == gameState.numberOfCardsInHand;
-                  },
-                  builder: (_, pcard, ___) => Row(
-                    children: player.cards
-                        .map((card) => Draggable(
-                            data: card,
-                            childWhenDragging: Container(),
-                            feedback: TransformedCard(
-                              playingCard: card,
-                            ),
-                            child: TransformedCard(
-                              playingCard: card,
-                            )))
-                        .toList(),
-                  ),
-                );
+                return _buildPlayerHand(gameState, player);
               }),
               const SizedBox(height: 10.0),
               Row(
                 children: <Widget>[
                   Text("Deck"),
-                  if (gameState.deck.length > 0)
-                    Draggable(
-                      data: {
-                        "from": "deck",
-                        "card": gameState.deck[0],
-                      },
-                      child: TransformedCard(
-                        playingCard: gameState.deck[0],
-                      ),
-                      feedback: Container(
-                        child: TransformedCard(
-                          playingCard: gameState.deck[0],
-                        ),
-                      ),
-                      childWhenDragging: TransformedCard(
-                        playingCard: gameState.deck[1],
-                      ),
-                    ),
+                  if (gameState.deck.length > 0) _buildDeck(gameState),
                   Text("Joker"),
                   if (gameState.joker != null)
                     TransformedCard(
                       playingCard: gameState.joker,
                     ),
                   Text("thrown"),
-                  DragTarget<PlayingCard>(
-                    builder: (context, _, __) {
-                      return gameState.throwDeck.length > 0
-                          ? TransformedCard(
-                              playingCard: gameState.throwDeck[0],
-                            )
-                          : Container(
-                              color: Colors.green,
-                              height: 60,
-                              width: 40,
-                            );
-                    },
-                    onWillAccept: (_) {
-                      return gameState.playType == PlayType.THROW_FROM_HAND;
-                    },
-                    onAccept: (pcard) {
-                      gameState.throwCard(pcard);
-                    },
-                  ),
+                  _buildThrowDeck(gameState),
                 ],
               ),
               const SizedBox(height: 10.0),
@@ -127,6 +70,76 @@ class HomePage extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  DragTarget<Map<String, dynamic>> _buildPlayerHand(
+      GameState gameState, Player player) {
+    int index = gameState.players.indexOf(player);
+    return DragTarget<Map<String, dynamic>>(
+      onAccept: (data) {
+        print(data);
+        gameState.accept(data);
+      },
+      onWillAccept: (_) {
+        return gameState.turn == index &&
+            player.cards.length == gameState.numberOfCardsInHand;
+      },
+      builder: (_, pcard, ___) => Row(
+        children: player.cards
+            .map((card) => Draggable(
+                data: card,
+                childWhenDragging: Container(),
+                feedback: TransformedCard(
+                  playingCard: card,
+                ),
+                child: TransformedCard(
+                  playingCard: card,
+                )))
+            .toList(),
+      ),
+    );
+  }
+
+  Draggable<Map<String, Object>> _buildDeck(GameState gameState) {
+    return Draggable(
+      data: {
+        "from": "deck",
+        "card": gameState.deck[0],
+      },
+      child: TransformedCard(
+        playingCard: gameState.deck[0],
+      ),
+      feedback: Container(
+        child: TransformedCard(
+          playingCard: gameState.deck[0],
+        ),
+      ),
+      childWhenDragging: TransformedCard(
+        playingCard: gameState.deck[1],
+      ),
+    );
+  }
+
+  DragTarget<PlayingCard> _buildThrowDeck(GameState gameState) {
+    return DragTarget<PlayingCard>(
+      builder: (context, _, __) {
+        return gameState.throwDeck.length > 0
+            ? TransformedCard(
+                playingCard: gameState.throwDeck[0],
+              )
+            : Container(
+                color: Colors.green,
+                height: 60,
+                width: 40,
+              );
+      },
+      onWillAccept: (_) {
+        return gameState.playType == PlayType.THROW_FROM_HAND;
+      },
+      onAccept: (pcard) {
+        gameState.throwCard(pcard);
+      },
     );
   }
 }
