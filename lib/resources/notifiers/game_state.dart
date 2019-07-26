@@ -63,6 +63,8 @@ class GameState extends ChangeNotifier {
     int pairsNeeded = (numberOfCardsInHand + 1)~/2;
     if( players[turn].isWinner(jokers,pairsNeeded)){
       winner = players[turn];
+      playType = null;
+      turn = null;
     }
   }
 
@@ -73,16 +75,24 @@ class GameState extends ChangeNotifier {
   accept(Map data) {
     if(data["from"] == "deck") {
       players[turn].cards.add(deck.removeAt(0));
-      isWinner();
-      playType = PlayType.THROW_FROM_HAND;
-      notifyListeners();
+    }else if(data["from"] == "throw") {
+      players[turn].cards.add(throwDeck.removeAt(0));
     }
+    isWinner();
+    playType = PlayType.THROW_FROM_HAND;
+    notifyListeners();
   }
 
-  throwCard(PlayingCard card) {
-    players[turn].cards.remove(card);
-    throwDeck.insert(0,card);
+  throwCard(Map data) {
+    PlayingCard card = data["card"];
+    if(data["from"] == "hand") {
+      players[turn].cards.remove(card);
+      throwDeck.insert(0,card);
+    }else if(data["from"] =="deck"){
+      throwDeck.insert(0, deck.removeAt(0));
+    }
     playType = PlayType.PICK_FROM_DECK_OR_THROW;
+    turnCount++;
     nextTurn();
     notifyListeners();
   }

@@ -9,10 +9,10 @@ class Player {
   bool isWinner(List<PlayingCard> jokers, int pairsNeeded) {
     List<PlayingCard> hand = List<PlayingCard>.from(cards);
     int pairsInHand = 0;
-    for(PlayingCard card in hand) {
-      if(jokers.contains(card)) {
+    for(PlayingCard joker in jokers) {
+      if(hand.contains(joker)) {
         pairsInHand++;
-        hand.remove(card);
+        hand.remove(joker);
       }
     }
     while(hand.length > 1) {

@@ -60,7 +60,7 @@ class HomePage extends StatelessWidget {
               Text("turn: ${gameState.turn}"),
               RaisedButton(
                 onPressed: () {
-                  gameState.beginGame();
+                  gameState.beginGame(playerCount: 2,numberOfCards: 5);
                 },
                 child: Text("Begin game"),
               ),
@@ -93,7 +93,10 @@ class HomePage extends StatelessWidget {
           builder: (_, pcard, ___) => Row(
             children: player.cards
                 .map((card) => Draggable(
-                    data: card,
+                    data: {
+                      "card":card,
+                      "from":"hand"
+                    },
                     childWhenDragging: Container(),
                     feedback: TransformedCard(
                       playingCard: card,
@@ -129,12 +132,26 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  DragTarget<PlayingCard> _buildThrowDeck(GameState gameState) {
-    return DragTarget<PlayingCard>(
+  Widget _buildThrowDeck(GameState gameState) {
+    return DragTarget<Map<String,dynamic>>(
       builder: (context, _, __) {
         return gameState.throwDeck.length > 0
-            ? TransformedCard(
-                playingCard: gameState.throwDeck[0],
+            ? Draggable(
+                child: TransformedCard(
+                  playingCard: gameState.throwDeck[0],
+                ),
+                feedback: TransformedCard(
+                  playingCard: gameState.throwDeck[0],
+                ),
+                childWhenDragging: Container(
+                  color: Colors.green,
+                  height: 60,
+                  width: 40,
+                ),
+                data: {
+                  "from":"throw",
+                  "card": gameState.throwDeck[0]
+                },
               )
             : Container(
                 color: Colors.green,
@@ -142,11 +159,11 @@ class HomePage extends StatelessWidget {
                 width: 40,
               );
       },
-      onWillAccept: (_) {
-        return gameState.playType == PlayType.THROW_FROM_HAND;
+      onWillAccept: (data) {
+        return (gameState.playType == PlayType.THROW_FROM_HAND && data["from"] == "hand") || ((gameState.playType == PlayType.PICK_FROM_DECK || gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW) && data["from"] == "deck");
       },
-      onAccept: (pcard) {
-        gameState.throwCard(pcard);
+      onAccept: (data) {
+        gameState.throwCard(data);
       },
     );
   }
