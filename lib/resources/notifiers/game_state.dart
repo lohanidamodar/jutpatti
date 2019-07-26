@@ -72,9 +72,16 @@ class GameState extends ChangeNotifier {
     turn = (turn+1)%numberOfPlayers;
   }
 
+  _makeDeckFromThrowDeck() {
+    deck.addAll(throwDeck);
+    throwDeck = [deck.removeAt(0)];
+  }
+
   accept(Map data) {
     if(data["from"] == "deck") {
       players[turn].cards.add(deck.removeAt(0));
+      if(deck.length == 1) 
+        _makeDeckFromThrowDeck();
     }else if(data["from"] == "throw") {
       players[turn].cards.add(throwDeck.removeAt(0));
     }
@@ -90,6 +97,8 @@ class GameState extends ChangeNotifier {
       throwDeck.insert(0,card);
     }else if(data["from"] =="deck"){
       throwDeck.insert(0, deck.removeAt(0));
+      if(deck.length == 1) 
+        _makeDeckFromThrowDeck();
     }
     playType = PlayType.PICK_FROM_DECK_OR_THROW;
     turnCount++;
