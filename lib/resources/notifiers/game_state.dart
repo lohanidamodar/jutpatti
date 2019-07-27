@@ -13,7 +13,7 @@ enum PlayType{
 
 class GameState extends ChangeNotifier {
   List<Player> players=[];
-  int numberOfPlayers;
+  int numberOfPlayers = 2;
   List<PlayingCard> deck=[];
   List<PlayingCard> throwDeck=[];
   List<PlayingCard> allCards;
@@ -25,11 +25,19 @@ class GameState extends ChangeNotifier {
   Player winner;
   PlayType playType;
 
-  beginGame({int playerCount = 2,int numberOfCards = 5}) {
-    numberOfCardsInHand = numberOfCards;
-    numberOfPlayers = playerCount;
+  setNumberOfPlayers(int number) {
+    numberOfPlayers = number;
+    notifyListeners();
+  }
+
+  setNumberOfCardsInHands(int number) {
+    numberOfCardsInHand = number;
+    notifyListeners();
+  }
+
+  beginGame() {
     players = [];
-    for(int i = 0; i < playerCount; i++) {
+    for(int i = 0; i < numberOfPlayers; i++) {
       players.add(Player(
         cards: [],
         type: i==0 ? PlayerType.HUMAN : PlayerType.COMPUTER,

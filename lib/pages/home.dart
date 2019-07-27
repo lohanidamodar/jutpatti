@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:jutpatti/resources/notifiers/game_state.dart';
 import 'package:provider/provider.dart';
 
+import 'settings.dart';
+
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context){
@@ -29,7 +31,7 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 onPressed: () {
-                  Provider.of<GameState>(context).beginGame(playerCount: 4,numberOfCards: 11);
+                  Provider.of<GameState>(context).beginGame();
                   Navigator.of(context).pushNamed('game');
                 },
               ),
@@ -49,12 +51,37 @@ class HomePage extends StatelessWidget {
                     Text("Settings".toUpperCase()),
                   ],
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  _showSettings(context);
+                },
               ),
             ],
           )
         ],
       ),
+    );
+  }
+
+  _showSettings(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => SimpleDialog(
+        contentPadding: const EdgeInsets.all(16.0),
+        title: Row(
+          children: <Widget>[
+            Text("Settings"),
+            Spacer(),
+            IconButton(
+              icon: Icon(Icons.close),
+              onPressed: ()=>Navigator.pop(context),
+            )
+          ],
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+        children: <Widget>[
+          SettingsPage(),
+        ],
+      )
     );
   }
 }
