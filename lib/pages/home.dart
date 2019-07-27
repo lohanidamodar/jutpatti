@@ -29,7 +29,7 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 onPressed: () {
-                  Provider.of<GameState>(context).beginGame();
+                  Provider.of<GameState>(context).beginGame(playerCount: 4,numberOfCards: 11);
                   Navigator.of(context).pushNamed('game');
                 },
               ),

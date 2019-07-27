@@ -3,6 +3,8 @@ import '../models/card.dart';
 
 // TransformedCard makes the card draggable and translates it according to
 // position in the stack.
+enum Position { LEFT, RIGHT, BOTTOM, TOP }
+
 class TransformedCard extends StatelessWidget {
   final PlayingCard playingCard;
   final double transformDistance;
@@ -12,6 +14,7 @@ class TransformedCard extends StatelessWidget {
   final int maxDrags;
   final double rotation;
   final int transformAxis;
+  final Position position;
 
   TransformedCard(
       {@required this.playingCard,
@@ -21,6 +24,7 @@ class TransformedCard extends StatelessWidget {
       this.maxDrags = 1,
       this.rotation = 0.1,
       this.transformAxis = 0,
+      this.position = Position.BOTTOM,
       this.dragData});
 
   @override
@@ -43,8 +47,8 @@ class TransformedCard extends StatelessWidget {
       data: dragData,
       child: !playingCard.faceUp
           ? Container(
-              height: 80.0,
-              width: 60.0,
+              height: _positionToHeight(),
+              width: _positionToWidth(),
               decoration: BoxDecoration(
                 color: Colors.blue,
                 border: Border.all(color: Colors.grey.shade300),
@@ -62,6 +66,57 @@ class TransformedCard extends StatelessWidget {
     );
   }
 
+  double _positionToHeight() {
+    switch (position) {
+      case Position.TOP:
+      case Position.BOTTOM:
+        return 80;
+      case Position.LEFT:
+      case Position.RIGHT:
+        return 60;
+      default:
+        return 80;
+    }
+  }
+
+  double _positionToWidth() {
+    switch (position) {
+      case Position.TOP:
+      case Position.BOTTOM:
+        return 60;
+      case Position.LEFT:
+      case Position.RIGHT:
+        return 80;
+      default:
+        return 60;
+    }
+  }
+
+  Alignment _positionToAlignment() {
+    switch (position) {
+      case Position.TOP:
+        return Alignment.bottomRight;
+      case Position.BOTTOM:
+        return Alignment.topLeft;
+      case Position.LEFT:
+        return Alignment.topRight;
+      case Position.RIGHT:
+        return Alignment.bottomLeft;
+      default:
+        return Alignment.bottomRight;
+    }
+  }
+
+  bool get isLeftRight =>
+      position == Position.LEFT || position == Position.RIGHT;
+  bool get isTopBottom =>
+      position == Position.TOP || position == Position.BOTTOM;
+
+  bool get isLeft => position == Position.LEFT;
+  bool get isRight => position == Position.RIGHT;
+  bool get isBottom => position == Position.BOTTOM;
+  bool get isTop => position == Position.TOP;
+
   Widget _buildFaceUpCard() {
     return Material(
       color: Colors.transparent,
@@ -71,39 +126,136 @@ class TransformedCard extends StatelessWidget {
           color: Colors.white,
           border: Border.all(color: Colors.grey.shade300),
         ),
-        height: 80.0,
-        width: 60,
+        height: _positionToHeight(),
+        width: _positionToWidth(),
         child: Stack(
           children: <Widget>[
             Center(
               child: Container(
                 height: 30.0,
-                child: _suitToImage(),
+                child: Transform.rotate(
+                    angle: isLeft
+                        ? 3.14 / 2
+                        : isRight ? -3.14 / 2 : isBottom ? 0 : 3.14,
+                    child: _suitToImage()),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      _cardTypeToString(),
-                      style: TextStyle(
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.bold,
-                          color: _suitToColor()),
-                    ),
-                    Container(
-                      height: 10.0,
-                      child: _suitToImage(),
-                    )
-                  ],
-                ),
+            if(isTop) _buildTopCard(),
+            if (isBottom) _buildBottomCard(),
+            if (isRight) _buildRightCard(),
+            if(isLeft) _buildLeftCard(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRightCard() {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Align(
+        alignment: _positionToAlignment(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Transform.rotate(
+              angle: -3.14 / 2,
+              child: Text(
+                _cardTypeToString(),
+                style: TextStyle(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.bold,
+                    color: _suitToColor()),
               ),
             ),
+            Container(
+              height: 10.0,
+              child: Transform.rotate(angle: -3.14 / 2, child: _suitToImage()),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildLeftCard() {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Align(
+        alignment: _positionToAlignment(),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              height: 10.0,
+              child: Transform.rotate(angle: 3.14 / 2, child: _suitToImage()),
+            ),
+            Transform.rotate(
+              angle: 3.14 / 2,
+              child: Text(
+                _cardTypeToString(),
+                style: TextStyle(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.bold,
+                    color: _suitToColor()),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Padding _buildBottomCard() {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Align(
+        alignment: _positionToAlignment(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              _cardTypeToString(),
+              style: TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.bold,
+                  color: _suitToColor()),
+            ),
+            Container(
+              height: 10.0,
+              child: _suitToImage(),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+  Padding _buildTopCard() {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Align(
+        alignment: _positionToAlignment(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              height: 10.0,
+              child: _suitToImage(),
+            ),
+            Transform.rotate(angle: 3.14,child: Text(
+              _cardTypeToString(),
+              style: TextStyle(
+                  fontSize: 12.0,
+                  fontWeight: FontWeight.bold,
+                  color: _suitToColor()),
+            ),),
           ],
         ),
       ),

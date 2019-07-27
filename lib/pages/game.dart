@@ -16,24 +16,34 @@ class GamePage extends StatelessWidget {
               return _buildPlayerHand(gameState, player);
             }),
             const SizedBox(height: 10.0),
-            Align(
-              alignment: Alignment.center,
-              child: Stack(
-                children: <Widget>[
-                  if (gameState.joker != null) _buildJoker(gameState),
-                  TransformedCard(
-                    playingCard: PlayingCard(
-                      cardSuit: CardSuit.clubs,
-                      cardType: CardType.eight,
-                      faceUp: false,
+            Transform.translate(
+              offset: Offset(-100,0),
+              child: Align(
+                alignment: Alignment.center,
+                child: Stack(
+                  children: <Widget>[
+                    if (gameState.joker != null) _buildJoker(gameState),
+                    TransformedCard(
+                      playingCard: PlayingCard(
+                        cardSuit: CardSuit.clubs,
+                        cardType: CardType.eight,
+                        faceUp: false,
+                      ),
+                      rotation: 0,
                     ),
-                    rotation: 0,
-                  ),
-                  _buildDeck(gameState),
-                ],
+                    _buildDeck(gameState),
+                  ],
+                ),
               ),
             ),
-            Row(
+            Transform.translate(
+              offset: Offset(100,0),
+              child: Align(
+                alignment: Alignment.center,
+                child: _buildThrowDeck(gameState),
+              ),
+            ),
+            /* Row(
               children: <Widget>[
                 Text("Deck"),
                 if (gameState.deck.length > 0) _buildDeck(gameState),
@@ -42,7 +52,7 @@ class GamePage extends StatelessWidget {
                 Text("thrown"),
                 _buildThrowDeck(gameState),
               ],
-            ),
+            ), */
             const SizedBox(height: 10.0),
             Text("turn: ${gameState.turn}"),
             if (gameState.winner != null)
@@ -62,24 +72,15 @@ class GamePage extends StatelessWidget {
     );
   }
 
-  _indexOfAlignment(int index) {
-    switch (index) {
-      case 0:
-        return Alignment.bottomCenter;
-      case 1:
-        return Alignment.centerLeft;
-      case 2:
-        return Alignment.centerRight;
-      default:
-        return Alignment.center;
-    }
-  }
-
   Widget _buildPlayerHand(GameState gameState, Player player) {
     int index = gameState.players.indexOf(player);
     switch (index) {
       case 1:
+        return _buildLeftHand(index, player, gameState);
+      case 2:
         return _buildRightHand(index, player, gameState);
+      case 3:
+        return _buildTopHand(index, player, gameState);
       default:
         return _buildBottomHand(index, player, gameState);
     }
@@ -87,21 +88,20 @@ class GamePage extends StatelessWidget {
 
   Widget _buildLeftHand(int index, Player player, GameState gameState) {
     return Positioned(
-      bottom: -100,
-      left: 0,
+      bottom: (gameState.numberOfCardsInHand * 25).toDouble() + 50,
+      left: -40,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
-          const SizedBox(width: 40),
-          Column(
-            mainAxisSize: MainAxisSize.min,
+          Stack(
             children: player.cards.map((card) {
               final int cIndex = player.cards.indexOf(card);
               return TransformedCard(
-                rotation: 3.14 / 2,
+                rotation: 0,
+                position: Position.LEFT,
                 transformAxis: 1,
-                transformDistance: 55,
+                transformDistance: -25,
                 playingCard: card,
                 maxDrags: 0,
                 transformIndex: cIndex,
@@ -114,22 +114,22 @@ class GamePage extends StatelessWidget {
   }
   Widget _buildRightHand(int index, Player player, GameState gameState) {
     return Positioned(
-      bottom: -150,
-      right: 0,
+      bottom:50,
+      right: -40,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           const SizedBox(width: 40),
-          Column(
-            mainAxisSize: MainAxisSize.min,
+          Stack(
+            // mainAxisSize: MainAxisSize.min,
             children: player.cards.map((card) {
               final int cIndex = player.cards.indexOf(card);
               return TransformedCard(
-                rotation: -3.14 / 2,
+                position: Position.RIGHT,
                 transformAxis: 1,
-                transformDistance: 55,
                 playingCard: card,
+                rotation: 0,
                 maxDrags: 0,
                 transformIndex: cIndex,
               );
@@ -140,41 +140,87 @@ class GamePage extends StatelessWidget {
     );
   }
 
-  Align _buildBottomHand(int index, Player player, GameState gameState) {
-    return Align(
-      alignment: _indexOfAlignment(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Text(player.name),
-          DragTarget<Map<String, dynamic>>(
-            onAccept: (data) {
-              print(data);
-              gameState.accept(data);
-            },
-            onWillAccept: (_) {
-              return gameState.turn == index &&
-                  player.cards.length == gameState.numberOfCardsInHand;
-            },
-            builder: (_, pcard, ___) => Row(
-              mainAxisSize: MainAxisSize.min,
-              children: player.cards.map((card) {
-                final int cIndex = player.cards.indexOf(card);
-                return TransformedCard(
-                  playingCard: card,
-                  maxDrags: player.type == PlayerType.HUMAN &&
-                          gameState.playType == PlayType.THROW_FROM_HAND
-                      ? 1
-                      : 0,
-                  dragData: {"card": card, "from": "hand"},
-                  transformIndex: cIndex,
-                );
-              }).toList(),
+  Widget _buildBottomHand(int index, Player player, GameState gameState) {
+    return Transform.translate(
+      offset: Offset(100,30),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(player.name),
+            DragTarget<Map<String, dynamic>>(
+              onAccept: (data) {
+                print(data);
+                gameState.accept(data);
+              },
+              onWillAccept: (_) {
+                return gameState.turn == index &&
+                    player.cards.length == gameState.numberOfCardsInHand;
+              },
+              builder: (_, pcard, ___) => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: player.cards.map((card) {
+                  final int cIndex = player.cards.indexOf(card);
+                  return TransformedCard(
+                    playingCard: card..faceUp=true,
+                    maxDrags: player.type == PlayerType.HUMAN &&
+                            gameState.playType == PlayType.THROW_FROM_HAND
+                        ? 1
+                        : 0,
+                    rotation: 0,
+                    dragData: {"card": card, "from": "hand"},
+                    transformIndex: cIndex,
+                  );
+                }).toList(),
+              ),
             ),
-          ),
-          const SizedBox(height: 10.0),
-        ],
+            const SizedBox(height: 10.0),
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildTopHand(int index, Player player, GameState gameState) {
+    return Transform.translate(
+      offset: Offset(100,-40),
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            DragTarget<Map<String, dynamic>>(
+              onAccept: (data) {
+                print(data);
+                gameState.accept(data);
+              },
+              onWillAccept: (_) {
+                return gameState.turn == index &&
+                    player.cards.length == gameState.numberOfCardsInHand;
+              },
+              builder: (_, pcard, ___) => Stack(
+                children: player.cards.map((card) {
+                  final int cIndex = player.cards.indexOf(card);
+                  return TransformedCard(
+                    position: Position.TOP,
+                    rotation: 0,
+                    playingCard: card,
+                    maxDrags: player.type == PlayerType.HUMAN &&
+                            gameState.playType == PlayType.THROW_FROM_HAND
+                        ? 1
+                        : 0,
+                    dragData: {"card": card, "from": "hand"},
+                    transformIndex: cIndex,
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 10.0),
+            Text(player.name),
+          ],
+        ),
       ),
     );
   }
@@ -197,19 +243,23 @@ class GamePage extends StatelessWidget {
   Widget _buildThrowDeck(GameState gameState) {
     return DragTarget<Map<String, dynamic>>(
       builder: (context, _, __) {
-        return gameState.throwDeck.length > 0
-            ? TransformedCard(
-                playingCard: gameState.throwDeck[0],
-                dragData: {"from": "throw", "card": gameState.throwDeck[0]},
-                maxDrags: gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
-                    ? 1
-                    : 0,
-              )
-            : Container(
-                color: Colors.green,
-                height: 80,
-                width: 60,
-              );
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          height: 200,
+          width: 200,
+          alignment: Alignment.center,
+          child: gameState.throwDeck.length > 0
+              ? TransformedCard(
+                  playingCard: gameState.throwDeck[0],
+                  dragData: {"from": "throw", "card": gameState.throwDeck[0]},
+                  maxDrags: gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
+                      ? 1
+                      : 0,
+                )
+              : Container(),
+        );
       },
       onWillAccept: (data) {
         return (gameState.playType == PlayType.THROW_FROM_HAND &&

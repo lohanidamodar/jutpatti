@@ -45,7 +45,7 @@ class GameState extends ChangeNotifier {
       players.forEach((player)=>player.cards.add(allCards.removeAt(0)));
     }
     Random random = Random();
-    joker = allCards.removeAt(random.nextInt(allCards.length));
+    joker = allCards.removeAt(random.nextInt(allCards.length))..faceUp=true;
     jokers = [
       PlayingCard(cardSuit: CardSuit.clubs,cardType: joker.nextCard()),
       PlayingCard(cardSuit: CardSuit.spades,cardType: joker.nextCard()),
@@ -81,8 +81,8 @@ class GameState extends ChangeNotifier {
   }
 
   _makeDeckFromThrowDeck() {
-    deck.addAll(throwDeck);
-    throwDeck = [deck.removeAt(0)];
+    deck.addAll(throwDeck.map((card){card.faceUp = false; return card;}));
+    throwDeck = [deck.removeAt(0)..faceUp = true];
   }
 
   accept(Map data) {
