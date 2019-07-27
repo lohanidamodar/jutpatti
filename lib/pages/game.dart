@@ -43,22 +43,45 @@ class GamePage extends StatelessWidget {
                 child: _buildThrowDeck(gameState),
               ),
             ),
-            /* Row(
-              children: <Widget>[
-                Text("Deck"),
-                if (gameState.deck.length > 0) _buildDeck(gameState),
-                Text("Joker"),
-                if (gameState.joker != null) _buildJoker(gameState),
-                Text("thrown"),
-                _buildThrowDeck(gameState),
-              ],
-            ), */
             const SizedBox(height: 10.0),
             Text("turn: ${gameState.turn}"),
             if (gameState.winner != null)
-              Text("Winner: ${gameState.winner.name}"),
+              _showWinnerDialog(context,gameState),
           ]);
         },
+      ),
+    );
+  }
+
+  Widget _showWinnerDialog(BuildContext context, GameState gameState) {
+    return Container(
+      color: Colors.black12,
+      alignment: Alignment.center,
+      child: AlertDialog(
+        title: Text("Game Over"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text("Winner: ${gameState.winner.name}"),
+            Text("Do you want to play again?")
+          ],
+        ),
+        actions: <Widget>[
+          RaisedButton(
+            textColor: Colors.white,
+            child: Text("Yes"),
+            onPressed: (){
+              gameState.beginGame();
+            },
+          ),
+          RaisedButton(
+            textColor: Colors.white,
+            child: Text("No"),
+            onPressed: (){
+              Navigator.pop(context);
+            },
+          )
+        ],
       ),
     );
   }
