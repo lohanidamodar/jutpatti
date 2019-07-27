@@ -15,6 +15,7 @@ class TransformedCard extends StatelessWidget {
   final double rotation;
   final int transformAxis;
   final Position position;
+  final Function onDragStart;
 
   TransformedCard(
       {@required this.playingCard,
@@ -25,6 +26,7 @@ class TransformedCard extends StatelessWidget {
       this.rotation = 0.1,
       this.transformAxis = 0,
       this.position = Position.BOTTOM,
+      this.onDragStart,
       this.dragData});
 
   @override
@@ -43,6 +45,7 @@ class TransformedCard extends StatelessWidget {
 
   Widget _buildCard() {
     return Draggable(
+      onDragStarted: onDragStart,
       maxSimultaneousDrags: maxDrags,
       data: dragData,
       child: !playingCard.faceUp

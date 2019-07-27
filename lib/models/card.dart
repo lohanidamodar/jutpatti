@@ -109,7 +109,7 @@ List<PlayingCard> getAllCards() {
       allCards.add(PlayingCard(
         cardType: type,
         cardSuit: suit,
-        faceUp: true,
+        faceUp: false,
       ));
     });
   });

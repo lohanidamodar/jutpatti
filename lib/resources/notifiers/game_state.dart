@@ -115,6 +115,7 @@ class GameState extends ChangeNotifier {
   }
 
   playByComputer() {
+    if(winner != null) return;
     Player player = players[turn];
     if(player.type == PlayerType.COMPUTER) {
       if(playType == PlayType.PICK_FROM_DECK) {
@@ -131,6 +132,8 @@ class GameState extends ChangeNotifier {
           _autoPickFromDeck();
         }
       }
+      if(deck.length == 1) 
+        _makeDeckFromThrowDeck();
       playType = PlayType.PICK_FROM_DECK_OR_THROW;
       nextTurn();
       notifyListeners();
@@ -166,6 +169,14 @@ class GameState extends ChangeNotifier {
 
   sortCards(List<PlayingCard> cards) {
     cards.sort((card1,card2) => card1.cardType.index.compareTo(card2.cardType.index));
+  }
+
+  deckTouched() {
+    if(playType == PlayType.PICK_FROM_DECK || playType == PlayType.PICK_FROM_DECK_OR_THROW) {
+      deck[0]..faceUp = true;
+      playType = PlayType.PICK_FROM_DECK;
+      notifyListeners();
+    }
   }
 
 }

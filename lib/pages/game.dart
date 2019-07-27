@@ -226,17 +226,21 @@ class GamePage extends StatelessWidget {
   }
 
   Widget _buildDeck(GameState gameState) {
-    return TransformedCard(
-      rotation: 0,
-      playingCard: gameState.deck[0],
-      dragData: {
-        "from": "deck",
-        "card": gameState.deck[0],
-      },
-      maxDrags: gameState.playType == PlayType.PICK_FROM_DECK ||
-              gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
-          ? 1
-          : 0,
+    return InkWell(
+      onTap: gameState.deckTouched,
+      child: TransformedCard(
+        rotation: 0,
+        playingCard: gameState.deck[0],
+        dragData: {
+          "from": "deck",
+          "card": gameState.deck[0],
+        },
+        onDragStart: gameState.deckTouched,
+        maxDrags: gameState.playType == PlayType.PICK_FROM_DECK ||
+                gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
+            ? 1
+            : 0,
+      ),
     );
   }
 
@@ -252,7 +256,7 @@ class GamePage extends StatelessWidget {
           alignment: Alignment.center,
           child: gameState.throwDeck.length > 0
               ? TransformedCard(
-                  playingCard: gameState.throwDeck[0],
+                  playingCard: gameState.throwDeck[0]..faceUp=true,
                   dragData: {"from": "throw", "card": gameState.throwDeck[0]},
                   maxDrags: gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
                       ? 1
