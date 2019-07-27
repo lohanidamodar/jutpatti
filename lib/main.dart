@@ -14,6 +14,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+    SystemChrome.setEnabledSystemUIOverlays([]);
     return ChangeNotifierProvider(
       builder: (context) => GameState(),
       child: MaterialApp(

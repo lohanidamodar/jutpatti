@@ -10,6 +10,8 @@ class TransformedCard extends StatelessWidget {
   final int columnIndex;
   final Map<String, dynamic> dragData;
   final int maxDrags;
+  final double rotation;
+  final int transformAxis;
 
   TransformedCard(
       {@required this.playingCard,
@@ -17,6 +19,8 @@ class TransformedCard extends StatelessWidget {
       this.transformIndex = 0,
       this.columnIndex,
       this.maxDrags = 1,
+      this.rotation = 0.1,
+      this.transformAxis = 0,
       this.dragData});
 
   @override
@@ -24,11 +28,11 @@ class TransformedCard extends StatelessWidget {
     return Transform(
       transform: Matrix4.identity()
         ..translate(
-          -transformIndex * transformDistance,
-          0.0,
-          0.0,
+          transformAxis == 0 ? -transformIndex * transformDistance : 0.0,
+          transformAxis == 1 ? -transformIndex * transformDistance : 0.0,
+          transformAxis == 2 ? -transformIndex * transformDistance : 0.0,
         )
-        ..rotateZ(.1),
+        ..rotateZ(rotation),
       child: _buildCard(),
     );
   }
