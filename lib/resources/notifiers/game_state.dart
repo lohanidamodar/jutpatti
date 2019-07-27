@@ -114,7 +114,7 @@ class GameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  playByComputer() {
+  playByComputer() async {
     if(winner != null) return;
     Player player = players[turn];
     if(player.type == PlayerType.COMPUTER) {
@@ -123,7 +123,7 @@ class GameState extends ChangeNotifier {
       }else if(playType == PlayType.PICK_FROM_DECK_OR_THROW) {
         PlayingCard card = throwDeck[0];
         if(sameCardInHand(card) == 1) {
-          player.cards.add(card);
+          player.cards.add(card..faceUp=false);
           if(isWinner())
             return;
           else

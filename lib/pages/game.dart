@@ -259,8 +259,8 @@ class GamePage extends StatelessWidget {
           "card": gameState.deck[0],
         },
         onDragStart: gameState.deckTouched,
-        maxDrags: gameState.playType == PlayType.PICK_FROM_DECK ||
-                gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
+        maxDrags: gameState.turn == 0 && (gameState.playType == PlayType.PICK_FROM_DECK ||
+                gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW)
             ? 1
             : 0,
       ),
@@ -281,7 +281,7 @@ class GamePage extends StatelessWidget {
               ? TransformedCard(
                   playingCard: gameState.throwDeck[0]..faceUp=true,
                   dragData: {"from": "throw", "card": gameState.throwDeck[0]},
-                  maxDrags: gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
+                  maxDrags: gameState.turn == 0 && gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
                       ? 1
                       : 0,
                 )
