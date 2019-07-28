@@ -17,7 +17,7 @@ class GamePage extends StatelessWidget {
             }),
             const SizedBox(height: 10.0),
             Transform.translate(
-              offset: Offset(-100,0),
+              offset: Offset(-100, 0),
               child: Align(
                 alignment: Alignment.center,
                 child: Stack(
@@ -37,20 +37,60 @@ class GamePage extends StatelessWidget {
               ),
             ),
             Transform.translate(
-              offset: Offset(100,0),
+              offset: Offset(100, 0),
               child: Align(
                 alignment: Alignment.center,
                 child: _buildThrowDeck(gameState),
               ),
             ),
             const SizedBox(height: 10.0),
-            Text("turn: ${gameState.turn}"),
-            if (gameState.winner != null)
-              _showWinnerDialog(context,gameState),
+            if(gameState.turn == 0)
+            Positioned(
+                bottom: 75, left: 100, child: _buildTurnMessage(gameState)),
+            if (gameState.winner != null) _showWinnerDialog(context, gameState),
           ]);
         },
       ),
     );
+  }
+
+  Container _buildTurnMessage(GameState gameState) {
+    return Container(
+      width: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5.0),
+        color: Colors.white60,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.yellow,
+            blurRadius: 5.0
+          )
+        ]
+      ),
+      padding: const EdgeInsets.all(16.0),
+      child: Text(_turnMessage(gameState),style: TextStyle(
+        color: Colors.black,
+        fontWeight: FontWeight.w500,
+        fontSize: 16.0
+      ), textAlign: TextAlign.center,),
+    );
+  }
+
+  String _turnMessage(GameState state) {
+    if(state.turn == 0) {
+      switch(state.playType) {
+        case PlayType.PICK_FROM_DECK:
+          return "Your turn to pick from deck";
+        case PlayType.PICK_FROM_DECK_OR_THROW:
+          return "Your turn to pick from deck or discarded pile";
+        case PlayType.THROW_FROM_HAND:
+          return "Your turn to throw a card";
+        default:
+          return "";
+      }
+    }else{
+      return "";
+    }
   }
 
   Widget _showWinnerDialog(BuildContext context, GameState gameState) {
@@ -70,14 +110,14 @@ class GamePage extends StatelessWidget {
           RaisedButton(
             textColor: Colors.white,
             child: Text("Yes"),
-            onPressed: (){
+            onPressed: () {
               gameState.beginGame();
             },
           ),
           RaisedButton(
             textColor: Colors.white,
             child: Text("No"),
-            onPressed: (){
+            onPressed: () {
               Navigator.pop(context);
             },
           )
@@ -135,9 +175,10 @@ class GamePage extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildRightHand(int index, Player player, GameState gameState) {
     return Positioned(
-      bottom:50,
+      bottom: 50,
       right: -40,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -165,7 +206,7 @@ class GamePage extends StatelessWidget {
 
   Widget _buildBottomHand(int index, Player player, GameState gameState) {
     return Transform.translate(
-      offset: Offset(100,30),
+      offset: Offset(100, 30),
       child: Align(
         alignment: Alignment.bottomCenter,
         child: Column(
@@ -187,7 +228,7 @@ class GamePage extends StatelessWidget {
                 children: player.cards.map((card) {
                   final int cIndex = player.cards.indexOf(card);
                   return TransformedCard(
-                    playingCard: card..faceUp=true,
+                    playingCard: card..faceUp = true,
                     maxDrags: player.type == PlayerType.HUMAN &&
                             gameState.playType == PlayType.THROW_FROM_HAND
                         ? 1
@@ -205,9 +246,10 @@ class GamePage extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildTopHand(int index, Player player, GameState gameState) {
     return Transform.translate(
-      offset: Offset(100,-40),
+      offset: Offset(100, -40),
       child: Align(
         alignment: Alignment.topCenter,
         child: Column(
@@ -259,8 +301,9 @@ class GamePage extends StatelessWidget {
           "card": gameState.deck[0],
         },
         onDragStart: gameState.deckTouched,
-        maxDrags: gameState.turn == 0 && (gameState.playType == PlayType.PICK_FROM_DECK ||
-                gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW)
+        maxDrags: gameState.turn == 0 &&
+                (gameState.playType == PlayType.PICK_FROM_DECK ||
+                    gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW)
             ? 1
             : 0,
       ),
@@ -279,9 +322,10 @@ class GamePage extends StatelessWidget {
           alignment: Alignment.center,
           child: gameState.throwDeck.length > 0
               ? TransformedCard(
-                  playingCard: gameState.throwDeck[0]..faceUp=true,
+                  playingCard: gameState.throwDeck[0]..faceUp = true,
                   dragData: {"from": "throw", "card": gameState.throwDeck[0]},
-                  maxDrags: gameState.turn == 0 && gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
+                  maxDrags: gameState.turn == 0 &&
+                          gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW
                       ? 1
                       : 0,
                 )
