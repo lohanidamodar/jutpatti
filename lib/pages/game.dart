@@ -37,9 +37,10 @@ class GamePage extends StatelessWidget {
               ),
             ),
             Transform.translate(
-              offset: Offset(100, 0),
-              child: Align(
-                alignment: Alignment.center,
+              offset: Offset(gameState.animation == null ? 100 : -30, 0),
+              child: AnimatedAlign(
+                duration: gameState.animationDuration,
+                alignment: gameState.animation == Animations.THROW_TO_LEFT ? Alignment.centerLeft: Alignment.center,
                 child: _buildThrowDeck(gameState),
               ),
             ),

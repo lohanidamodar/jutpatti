@@ -11,6 +11,13 @@ enum PlayType{
   THROW_FROM_HAND,
 }
 
+enum Animations {
+  THROW_TO_LEFT,
+  LEFT_TO_THROW,
+  DECK_TO_LEFT
+  
+}
+
 class GameState extends ChangeNotifier {
   List<Player> players=[];
   int numberOfPlayers = 2;
@@ -24,6 +31,8 @@ class GameState extends ChangeNotifier {
   List<PlayingCard> jokers;
   Player winner;
   PlayType playType;
+  Animations animation;
+  Duration animationDuration = Duration(milliseconds: 1000);
 
   setNumberOfPlayers(int number) {
     numberOfPlayers = number;
@@ -126,11 +135,17 @@ class GameState extends ChangeNotifier {
     if(winner != null) return;
     Player player = players[turn];
     if(player.type == PlayerType.COMPUTER) {
+      animation = Animations.THROW_TO_LEFT;
+      notifyListeners();
+      await Future.delayed(animationDuration);
       if(playType == PlayType.PICK_FROM_DECK) {
         _autoPickFromDeck();
       }else if(playType == PlayType.PICK_FROM_DECK_OR_THROW) {
         PlayingCard card = throwDeck[0];
         if(sameCardInHand(card) == 1) {
+          animation = Animations.THROW_TO_LEFT;
+          notifyListeners();
+          await Future.delayed(animationDuration);
           player.cards.add(card..faceUp=false);
           if(isWinner())
             return;
@@ -143,6 +158,7 @@ class GameState extends ChangeNotifier {
       if(deck.length == 1) 
         _makeDeckFromThrowDeck();
       playType = PlayType.PICK_FROM_DECK_OR_THROW;
+      animation = null;
       nextTurn();
       notifyListeners();
     }
