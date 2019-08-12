@@ -83,6 +83,7 @@ class GameState extends ChangeNotifier {
     int pairsNeeded = (numberOfCardsInHand + 1)~/2;
     if( players[turn].isWinner(jokers,pairsNeeded)){
       winner = players[turn];
+      players[turn].cards = players[turn].cards.map((card)=>card..faceUp = true).toList();
       playType = null;
       turn = null;
       notifyListeners();
