@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jutpatti/models/card.dart';
 import 'package:jutpatti/models/player.dart';
 import 'package:jutpatti/resources/notifiers/game_state.dart';
-import 'package:jutpatti/widgets/playing_card.dart';
+import 'package:jutpatti/widgets/player_card.dart';
 import 'package:provider/provider.dart';
 
 class GamePage extends StatelessWidget {
@@ -29,7 +29,6 @@ class GamePage extends StatelessWidget {
                         cardType: CardType.eight,
                         faceUp: false,
                       ),
-                      rotation: 0,
                     ),
                     _buildDeck(gameState),
                   ],
@@ -127,12 +126,13 @@ class GamePage extends StatelessWidget {
     );
   }
 
-  TransformedCard _buildJoker(GameState gameState) {
-    return TransformedCard(
-      playingCard: gameState.joker,
-      transformIndex: 1,
-      rotation: -.1,
-      maxDrags: 0,
+  Widget _buildJoker(GameState gameState) {
+    return TransformCard(
+        transformIndex: 1,
+          child: DraggableCard(
+        playingCard: gameState.joker,
+        maxDrags: 0,
+      ),
     );
   }
 
@@ -153,7 +153,7 @@ class GamePage extends StatelessWidget {
   Widget _buildLeftHand(int index, Player player, GameState gameState) {
     return Positioned(
       bottom: (gameState.numberOfCardsInHand * 25).toDouble() + 50,
-      left: -40,
+      left: -10,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -162,12 +162,10 @@ class GamePage extends StatelessWidget {
             children: player.cards.map((card) {
               final int cIndex = player.cards.indexOf(card);
               return TransformedCard(
-                rotation: 0,
                 position: Position.LEFT,
                 transformAxis: 1,
                 transformDistance: -25,
                 playingCard: card,
-                maxDrags: 0,
                 transformIndex: cIndex,
               );
             }).toList(),
@@ -180,7 +178,7 @@ class GamePage extends StatelessWidget {
   Widget _buildRightHand(int index, Player player, GameState gameState) {
     return Positioned(
       bottom: 50,
-      right: -40,
+      right: -10,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -194,8 +192,6 @@ class GamePage extends StatelessWidget {
                 position: Position.RIGHT,
                 transformAxis: 1,
                 playingCard: card,
-                rotation: 0,
-                maxDrags: 0,
                 transformIndex: cIndex,
               );
             }).toList(),
@@ -228,15 +224,16 @@ class GamePage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: player.cards.map((card) {
                   final int cIndex = player.cards.indexOf(card);
-                  return TransformedCard(
-                    playingCard: card..faceUp = true,
-                    maxDrags: player.type == PlayerType.HUMAN &&
-                            gameState.playType == PlayType.THROW_FROM_HAND
-                        ? 1
-                        : 0,
-                    rotation: 0,
-                    dragData: {"card": card, "from": "hand"},
-                    transformIndex: cIndex,
+                  return TransformCard(
+                      transformIndex: cIndex,
+                      child: DraggableCard(
+                      playingCard: card..faceUp = true,
+                      maxDrags: player.type == PlayerType.HUMAN &&
+                              gameState.playType == PlayType.THROW_FROM_HAND
+                          ? 1
+                          : 0,
+                      dragData: {"card": card, "from": "hand"},
+                    ),
                   );
                 }).toList(),
               ),
@@ -269,16 +266,17 @@ class GamePage extends StatelessWidget {
               builder: (_, pcard, ___) => Stack(
                 children: player.cards.map((card) {
                   final int cIndex = player.cards.indexOf(card);
-                  return TransformedCard(
-                    position: Position.TOP,
-                    rotation: 0,
-                    playingCard: card,
-                    maxDrags: player.type == PlayerType.HUMAN &&
-                            gameState.playType == PlayType.THROW_FROM_HAND
-                        ? 1
-                        : 0,
-                    dragData: {"card": card, "from": "hand"},
-                    transformIndex: cIndex,
+                  return TransformCard(
+                      position: Position.TOP,
+                      transformIndex: cIndex,
+                      child: DraggableCard(
+                      playingCard: card,
+                      maxDrags: player.type == PlayerType.HUMAN &&
+                              gameState.playType == PlayType.THROW_FROM_HAND
+                          ? 1
+                          : 0,
+                      dragData: {"card": card, "from": "hand"},
+                    ),
                   );
                 }).toList(),
               ),
@@ -294,8 +292,7 @@ class GamePage extends StatelessWidget {
   Widget _buildDeck(GameState gameState) {
     return InkWell(
       onTap: gameState.deckTouched,
-      child: TransformedCard(
-        rotation: 0,
+      child: DraggableCard(
         playingCard: gameState.deck[0],
         dragData: {
           "from": "deck",
@@ -322,7 +319,7 @@ class GamePage extends StatelessWidget {
           width: 200,
           alignment: Alignment.center,
           child: gameState.throwDeck.length > 0
-              ? TransformedCard(
+              ? DraggableCard(
                   playingCard: gameState.throwDeck[0]..faceUp = true,
                   dragData: {"from": "throw", "card": gameState.throwDeck[0]},
                   maxDrags: gameState.turn == 0 &&
