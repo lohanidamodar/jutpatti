@@ -195,7 +195,8 @@ class _GamePageState extends State<GamePage>
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text("Winner: ${gameState.winner.name}"),
-            Text("Do you want to play again?")
+            Text("Do you want to play again?"),
+            _buildBottomHand(gameState.turn, gameState.winner,gameState)
           ],
         ),
         actions: <Widget>[
