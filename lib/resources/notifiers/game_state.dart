@@ -141,6 +141,7 @@ class GameState extends ChangeNotifier {
     if(winner != null) return;
     Player player = players[turn];
     if(player.type == PlayerType.COMPUTER) {
+      await Future.delayed(animationDuration);
       if(playType == PlayType.PICK_FROM_DECK) {
         await _autoPickFromDeck();
       }else if(playType == PlayType.PICK_FROM_DECK_OR_THROW) {
