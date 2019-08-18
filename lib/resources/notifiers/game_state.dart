@@ -13,9 +13,14 @@ enum PlayType{
 
 enum Animations {
   THROW_TO_LEFT,
+  DECK_TO_LEFT,
   LEFT_TO_THROW,
-  DECK_TO_LEFT
-  
+  THROW_TO_TOP,
+  DECK_TO_TOP,
+  TOP_TO_THROW,
+  THROW_TO_RIGHT,
+  DECK_TO_RIGHT,
+  RIGHT_TO_THROW,
 }
 
 class GameState extends ChangeNotifier {
@@ -136,17 +141,12 @@ class GameState extends ChangeNotifier {
     if(winner != null) return;
     Player player = players[turn];
     if(player.type == PlayerType.COMPUTER) {
-      animation = Animations.THROW_TO_LEFT;
-      notifyListeners();
       await Future.delayed(animationDuration);
       if(playType == PlayType.PICK_FROM_DECK) {
         _autoPickFromDeck();
       }else if(playType == PlayType.PICK_FROM_DECK_OR_THROW) {
         PlayingCard card = throwDeck[0];
         if(sameCardInHand(card) == 1) {
-          animation = Animations.THROW_TO_LEFT;
-          notifyListeners();
-          await Future.delayed(animationDuration);
           player.cards.add(card..faceUp=false);
           if(isWinner())
             return;
@@ -160,6 +160,8 @@ class GameState extends ChangeNotifier {
         _makeDeckFromThrowDeck();
       playType = PlayType.PICK_FROM_DECK_OR_THROW;
       animation = null;
+      notifyListeners();
+      await Future.delayed(animationDuration);
       nextTurn();
       notifyListeners();
     }
