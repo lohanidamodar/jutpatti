@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:jutpatti/pages/animations.dart';
 import 'package:jutpatti/pages/game.dart';
 import 'package:jutpatti/pages/home.dart';
 import 'package:jutpatti/resources/notifiers/game_state.dart';

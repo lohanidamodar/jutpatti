@@ -1,16 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:jutpatti/models/card.dart';
 import 'package:jutpatti/models/player.dart';
+import 'package:jutpatti/pages/animations.dart';
 import 'package:jutpatti/resources/notifiers/game_state.dart';
 import 'package:jutpatti/widgets/player_card.dart';
 import 'package:provider/provider.dart';
 
-class GamePage extends StatelessWidget {
+class GamePage extends StatefulWidget {
+  @override
+  _GamePageState createState() => _GamePageState();
+}
+
+class _GamePageState extends State<GamePage>
+    with SingleTickerProviderStateMixin {
+  AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Consumer<GameState>(
         builder: (context, gameState, _) {
+          if (gameState.animation != null) {
+            _controller.reset();
+            _controller.forward();
+          }
           return Stack(children: [
             ...gameState.players.map((player) {
               return _buildPlayerHand(gameState, player);
@@ -21,16 +41,14 @@ class GamePage extends StatelessWidget {
                     gameState.playType == PlayType.PICK_FROM_DECK_OR_THROW))
               _buildPickCard(gameState),
             if (gameState.turn != 0) ...[
-              AnimatedPositioned(
-                  duration: gameState.animationDuration,
+              Positioned(
                   top: MediaQuery.of(context).size.height / 2 - 30,
-                  left: gameState.animation == Animations.DECK_TO_LEFT ? 0 : MediaQuery.of(context).size.width / 2 - 80,
+                  left: MediaQuery.of(context).size.width / 2 - 80,
                   child: FaceDownCard()),
-              if (gameState.throwDeck.isNotEmpty)
-                AnimatedPositioned(
+              if (gameState.throwDeck.isNotEmpty && gameState.animation == null)
+                Positioned(
                   top: MediaQuery.of(context).size.height / 2 - 30,
-                  left: MediaQuery.of(context).size.width / 2+10,
-                  duration: gameState.animationDuration,
+                  left: MediaQuery.of(context).size.width / 2 + 10,
                   child: Container(
                     width: 60,
                     height: 80,
@@ -44,10 +62,88 @@ class GamePage extends StatelessWidget {
               _buildThrowTarget(gameState),
             const SizedBox(height: 10.0),
             if (gameState.winner != null) _showWinnerDialog(context, gameState),
+            if (gameState.turn != 0)
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) => _buildAnimation(context, gameState),
+              ),
           ]);
         },
       ),
     );
+  }
+
+  Widget _buildAnimation(BuildContext context, GameState gameState) {
+    switch (gameState.animation) {
+      case Animations.LEFT_TO_THROW:
+        return LeftToThrow(
+          controller: _controller,
+          child: SizedBox(
+              width: 60,
+              height: 80,
+              child: PlayingCardUi(
+                playingCard: gameState.throwDeck[0]..faceUp = true,
+              )),
+        );
+      case Animations.THROW_TO_LEFT:
+        return ThrowToLeft(
+          controller: _controller,
+          child: SizedBox(
+              width: 60,
+              height: 80,
+              child: PlayingCardUi(
+                playingCard: gameState.throwDeck[0]..faceUp = true,
+              )),
+        );
+      case Animations.DECK_TO_LEFT:
+        return DeckToLeft(controller: _controller, child: FaceDownCard());
+      case Animations.RIGHT_TO_THROW:
+        return RightToThrow(
+          controller: _controller,
+          child: SizedBox(
+              width: 60,
+              height: 80,
+              child: PlayingCardUi(
+                playingCard: gameState.throwDeck[0]..faceUp = true,
+              )),
+        );
+      case Animations.THROW_TO_RIGHT:
+        return ThrowToRight(
+          controller: _controller,
+          child: SizedBox(
+              width: 60,
+              height: 80,
+              child: PlayingCardUi(
+                playingCard: gameState.throwDeck[0]..faceUp = true,
+              )),
+        );
+      case Animations.DECK_TO_RIGHT:
+        return DeckToRight(controller: _controller, child: FaceDownCard());
+      case Animations.TOP_TO_THROW:
+        return TopToThrow(
+          controller: _controller,
+          child: SizedBox(
+              width: 60,
+              height: 80,
+              child: PlayingCardUi(
+                playingCard: gameState.throwDeck[0]..faceUp = true,
+              )),
+        );
+      case Animations.THROW_TO_TOP:
+        return ThrowToTop(
+          controller: _controller,
+          child: SizedBox(
+              width: 60,
+              height: 80,
+              child: PlayingCardUi(
+                playingCard: gameState.throwDeck[0]..faceUp = true,
+              )),
+        );
+      case Animations.DECK_TO_TOP:
+        return DeckToTop(controller: _controller, child: FaceDownCard());
+      default:
+        return Container();
+    }
   }
 
   Widget _buildPickCard(GameState gameState) {
@@ -158,9 +254,10 @@ class GamePage extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       duration: Duration(milliseconds: 500),
       decoration: BoxDecoration(
-        color: gameState.turn == gameState.players.indexOf(player) ? Colors.orange : Colors.white70,
-        shape: BoxShape.circle
-      ),
+          color: gameState.turn == gameState.players.indexOf(player)
+              ? Colors.orange
+              : Colors.white70,
+          shape: BoxShape.circle),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -175,9 +272,8 @@ class GamePage extends StatelessWidget {
 
   Widget _buildRightHand(int index, Player player, GameState gameState) {
     return Align(
-      alignment: Alignment.centerRight,
-      child: _buildPlayer(gameState, player)
-    );
+        alignment: Alignment.centerRight,
+        child: _buildPlayer(gameState, player));
   }
 
   Widget _buildBottomHand(int index, Player player, GameState gameState) {

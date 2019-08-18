@@ -37,7 +37,7 @@ class GameState extends ChangeNotifier {
   Player winner;
   PlayType playType;
   Animations animation;
-  Duration animationDuration = Duration(milliseconds: 1000);
+  Duration animationDuration = Duration(milliseconds: 500);
 
   setNumberOfPlayers(int number) {
     numberOfPlayers = number;
@@ -141,19 +141,25 @@ class GameState extends ChangeNotifier {
     if(winner != null) return;
     Player player = players[turn];
     if(player.type == PlayerType.COMPUTER) {
-      await Future.delayed(animationDuration);
       if(playType == PlayType.PICK_FROM_DECK) {
-        _autoPickFromDeck();
+        await _autoPickFromDeck();
       }else if(playType == PlayType.PICK_FROM_DECK_OR_THROW) {
         PlayingCard card = throwDeck[0];
         if(sameCardInHand(card) == 1) {
+          animation = turn == 1 ? Animations.THROW_TO_LEFT : turn==2?Animations.THROW_TO_RIGHT:Animations.THROW_TO_TOP;
+          notifyListeners();
+          await Future.delayed(animationDuration);
           player.cards.add(card..faceUp=false);
           if(isWinner())
             return;
-          else
+          else{
+            animation = turn == 1 ? Animations.LEFT_TO_THROW : turn==2?Animations.RIGHT_TO_THROW:Animations.TOP_TO_THROW;
+            notifyListeners();
             autoThrowCard();
+            await Future.delayed(animationDuration);
+          }
         }else{
-          _autoPickFromDeck();
+          await _autoPickFromDeck();
         }
       }
       if(deck.length == 1) 
@@ -161,21 +167,30 @@ class GameState extends ChangeNotifier {
       playType = PlayType.PICK_FROM_DECK_OR_THROW;
       animation = null;
       notifyListeners();
-      await Future.delayed(animationDuration);
       nextTurn();
       notifyListeners();
     }
   }
 
-  _autoPickFromDeck() {
+  _autoPickFromDeck() async{
+    animation = turn == 1 ? Animations.DECK_TO_LEFT : turn==2?Animations.DECK_TO_RIGHT:Animations.DECK_TO_TOP;
+    notifyListeners();
+    await Future.delayed(animationDuration);
     PlayingCard card = deck.removeAt(0);
     if(sameCardInHand(card) == 1 || jokers.contains(card)) {
       players[turn].cards.add(card);
       if(isWinner())
         return;
+      animation = turn == 1 ? Animations.LEFT_TO_THROW : turn==2?Animations.RIGHT_TO_THROW:Animations.TOP_TO_THROW;
+      notifyListeners();
       autoThrowCard();
+      await Future.delayed(animationDuration);
     }else{
+      animation = turn == 1 ? Animations.LEFT_TO_THROW : turn==2?Animations.RIGHT_TO_THROW:Animations.TOP_TO_THROW;
+      notifyListeners();
       throwDeck.insert(0, card);
+      await Future.delayed(animationDuration);
+
     }
   }
 
